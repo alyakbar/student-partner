@@ -10,31 +10,34 @@ class AuthRepository(private val firebaseAuth: FirebaseAuth = FirebaseModule.aut
     
     private val _currentUser = MutableStateFlow(firebaseAuth.currentUser)
     val currentUser: StateFlow<FirebaseUser?> = _currentUser
+    private val _authStateInitialized = MutableStateFlow(false)
+    val authStateInitialized: StateFlow<Boolean> = _authStateInitialized
 
     init {
         firebaseAuth.addAuthStateListener {
             _currentUser.value = it.currentUser
+            _authStateInitialized.value = true
         }
     }
 
-    fun login(email: String, password: String, onResult: (Boolean, String?) -> Unit) {
+    fun login(email: String, password: String, onResult: (FirebaseUser?, String?) -> Unit) {
         firebaseAuth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    onResult(true, null)
+                    onResult(task.result?.user, null)
                 } else {
-                    onResult(false, task.exception?.message)
+                    onResult(null, task.exception?.message)
                 }
             }
     }
 
-    fun register(email: String, password: String, onResult: (Boolean, String?) -> Unit) {
+    fun register(email: String, password: String, onResult: (FirebaseUser?, String?) -> Unit) {
         firebaseAuth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    onResult(true, null)
+                    onResult(task.result?.user, null)
                 } else {
-                    onResult(false, task.exception?.message)
+                    onResult(null, task.exception?.message)
                 }
             }
     }

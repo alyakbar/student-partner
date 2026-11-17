@@ -27,16 +27,20 @@ fun SplashScreen(
     authViewModel: AuthViewModel = viewModel()
 ) {
     val currentUser by authViewModel.currentUser.collectAsState()
+    val authStateInitialized by authViewModel.authStateInitialized.collectAsState()
 
-    LaunchedEffect(key1 = true) {
-        delay(2000) // 2 seconds delay
+    LaunchedEffect(authStateInitialized, currentUser?.uid) {
+        if (!authStateInitialized) return@LaunchedEffect
+        delay(500)
         if (currentUser != null) {
             navController.navigate(Screen.Dashboard.route) {
                 popUpTo(Screen.Splash.route) { inclusive = true }
+                launchSingleTop = true
             }
         } else {
             navController.navigate(Screen.Login.route) {
                 popUpTo(Screen.Splash.route) { inclusive = true }
+                launchSingleTop = true
             }
         }
     }

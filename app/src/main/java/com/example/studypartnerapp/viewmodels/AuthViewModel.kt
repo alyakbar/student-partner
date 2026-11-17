@@ -20,6 +20,7 @@ class AuthViewModel(
     private val TAG = "KCA_AUTH"
 
     val currentUser: StateFlow<FirebaseUser?> = authRepository.currentUser
+    val authStateInitialized: StateFlow<Boolean> = authRepository.authStateInitialized
 
     private val _authState = MutableStateFlow<Resource<FirebaseUser>>(Resource.Loading())
     val authState: StateFlow<Resource<FirebaseUser>> = _authState
@@ -35,10 +36,10 @@ class AuthViewModel(
         viewModelScope.launch {
             Log.d(TAG, "Attempting login for: $email")
             _authState.value = Resource.Loading()
-            authRepository.login(email, password) { success, error ->
-                if (success) {
+            authRepository.login(email, password) { user, error ->
+                if (user != null) {
                     Log.d(TAG, "Login successful")
-                    _authState.value = Resource.Success(authRepository.currentUser.value!!)
+                    _authState.value = Resource.Success(user)
                 } else {
                     Log.e(TAG, "Login failed: $error")
                     _authState.value = Resource.Error(error ?: "Login failed")
@@ -52,9 +53,9 @@ class AuthViewModel(
             Log.d(TAG, "Starting registration for: ${student.email}")
             _authState.value = Resource.Loading()
             
-            authRepository.register(student.email, password) { success, error ->
-                if (success) {
-                    val uid = authRepository.currentUser.value?.uid ?: ""
+            authRepository.register(student.email, password) { user, error ->
+                if (user != null) {
+                    val uid = user.uid
                     Log.d(TAG, "Auth successful, UID: $uid")
                     
                     val updatedStudent = student.copy(uid = uid)
@@ -67,7 +68,7 @@ class AuthViewModel(
                             
                             if (profileCreated) {
                                 Log.d(TAG, "Profile created successfully!")
-                                _authState.value = Resource.Success(authRepository.currentUser.value!!)
+                                _authState.value = Resource.Success(user)
                             } else {
                                 Log.e(TAG, "Profile creation failed in repository")
                                 _authState.value = Resource.Error("Could not save profile data. Please check connection.")

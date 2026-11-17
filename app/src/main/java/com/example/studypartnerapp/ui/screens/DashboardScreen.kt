@@ -72,7 +72,8 @@ fun DashboardScreen(
                     IconButton(onClick = { 
                         viewModel.logout()
                         navController.navigate(Screen.Login.route) {
-                            popUpTo(0) { inclusive = true }
+                            popUpTo(navController.graph.id) { inclusive = true }
+                            launchSingleTop = true
                         }
                     }) {
                         Icon(Icons.Default.Logout, contentDescription = "Logout", tint = Color.White)

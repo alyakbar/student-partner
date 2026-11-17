@@ -212,7 +212,8 @@ fun ProfileScreen(
                 TextButton(onClick = { 
                     viewModel.logout()
                     navController.navigate(com.example.studypartnerapp.navigation.Screen.Login.route) {
-                        popUpTo(0) { inclusive = true }
+                        popUpTo(navController.graph.id) { inclusive = true }
+                        launchSingleTop = true
                     }
                 }) {
                     Text("Logout", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
